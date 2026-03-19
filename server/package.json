@@ -1,0 +1,43 @@
+{
+  "name": "skil-hub-server",
+  "version": "1.0.0",
+  "description": "SKIL Hub — Backend API Server",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js",
+    "test": "jest --runInBand --forceExit",
+    "test:coverage": "jest --coverage --runInBand --forceExit",
+    "init-db": "node database/init.js",
+    "seed": "node database/seed.js",
+    "check:ml": "node scripts/verify-ml-integration.js"
+  },
+  "keywords": [
+    "skil-hub",
+    "academic",
+    "social-network"
+  ],
+  "author": "SKIL Hub Team",
+  "license": "MIT",
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "better-sqlite3": "^12.8.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-rate-limit": "^7.2.0",
+    "express-validator": "^7.0.1",
+    "jsonwebtoken": "^9.0.2"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "nodemon": "^3.1.0",
+    "supertest": "^6.3.4"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "testMatch": [
+      "**/__tests__/**/*.test.js"
+    ]
+  }
+}
