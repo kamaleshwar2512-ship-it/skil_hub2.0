@@ -73,7 +73,7 @@ def train():
     labels = df["category"].astype(str).tolist()
 
     X_train, X_test, y_train, y_test = train_test_split(
-        texts, labels, test_size=0.2, random_state=42, stratify=labels if len(df) >= 5 else None
+        texts, labels, test_size=0.2, random_state=42, stratify=labels if len(df) >= 30 else None
     )
 
     vectorizer = TfidfVectorizer(

@@ -1,7 +1,7 @@
 # Project State — SKIL Hub
 
 **Current Phase: Phase 8 (Deployment Preparation)**
-**Current Date: 2026-03-19**
+**Current Date: 2026-03-21**
 
 ---
 
@@ -55,6 +55,7 @@
 | TASK-7.1 | Core Backend Tests | ✅ | `auth.test.js`, `health.test.js`, `post.test.js`, `project.test.js`, `notification.test.js` (100% Pass) |
 | TASK-7.2 | Core Frontend Tests | ✅ | `LoginPage.test.jsx`, `FeedPage.test.jsx`, `RegisterPage.test.jsx` (100% Pass) |
 | TASK-7.3 | Bug Fixes (Testing) | ✅ | Fixed `post.model.js` column name, `project.model.js` owner_id, `project.controller.js` notif types |
+| TASK-7.4 | Bug Fixes (Integration) | ✅ | Fixed `achievement.controller.js` category fallback & `ml-service` model training |
 
 ---
 
@@ -99,7 +100,13 @@ skil-hub/
 - **Authentication**: JWT issuance and protection middleware cleanly wraps endpoints alongside `express-validator` request bounds.
 - **Backend APIs**: Core Data (Phase 3) completely functionally verified via direct node test scripts.
 - **Frontend State**: Auth and Notification contexts scaffolded.
-- **ML Service**: Flask server and model wrapper classes created. Backend proxies gracefully fallback under test environments returning empty clusters globally.
+- **ML Service**: Flask server and model wrapper classes fully functional. Models trained and verified.
+- **Integration Fixes**: 
+    - Resolved `TypeError` in achievement creation by adding timeout signal to ML fetch.
+    - Fixed `NOT NULL` constraint on achievement category with backend fallback.
+    - Optimized `FeedPage` performance and fixed potential SQL crash in `getFeed` via parameterization.
+    - Hardened background trending score updates with `try-catch` to prevent server restarts.
+    - Updated Vite proxy to `127.0.0.1` for improved local connectivity on Windows.
 - **Proxy**: Vite proxy configured to forward `/api` requests to port 3000.
 
 ---

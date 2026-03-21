@@ -1,0 +1,74 @@
+[
+  {
+    "id": 1,
+    "user_id": 1,
+    "content": "Just published my first research paper on IEEE Access! Huge thanks to Dr. Sen for the guidance. #research #ai",
+    "post_type": "research",
+    "image_url": null,
+    "trending_score": 11.482,
+    "created_at": "2026-03-19 01:15:47",
+    "updated_at": "2026-03-21 01:15:47",
+    "author_name": "Aarav Patel",
+    "author_avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Aarav"
+  },
+  {
+    "id": 2,
+    "user_id": 2,
+    "content": "We just hit 500 active users on the campus file sharing app! Looking for contributors to help with the v2 rewrite in Go. Let me know if you are interested!",
+    "post_type": "project_update",
+    "image_url": null,
+    "trending_score": 7.1063,
+    "created_at": "2026-03-20 01:15:47",
+    "updated_at": "2026-03-21 01:15:47",
+    "author_name": "Isha Sharma",
+    "author_avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Isha"
+  },
+  {
+    "id": 3,
+    "user_id": 4,
+    "content": "Day 50 of 100 days of code! Started learning React today and it is mind-blowing how much easier state management is compared to vanilla JS.",
+    "post_type": "general",
+    "image_url": null,
+    "trending_score": 4.6683,
+    "created_at": "2026-03-20 13:15:47",
+    "updated_at": "2026-03-21 01:15:47",
+    "author_name": "Priya Singh",
+    "author_avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Priya"
+  },
+  {
+    "id": 4,
+    "user_id": 3,
+    "content": "Finally got the LoRaWAN module working with the smart agriculture sensory node. Range is incredible! #iot #hardware",
+    "post_type": "project_update",
+    "image_url": "https://example.com/iot-board.jpg",
+    "trending_score": 8.1601,
+    "created_at": "2026-03-20 20:15:47",
+    "updated_at": "2026-03-21 01:15:47",
+    "author_name": "Rohan Gupta",
+    "author_avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Rohan"
+  },
+  {
+    "id": 5,
+    "user_id": 1,
+    "content": "Thrilled to share that I have passed the AWS Certified Solutions Architect exam! The journey was tough but worth it. Next up: building some serverless side-projects.",
+    "post_type": "achievement",
+    "image_url": null,
+    "trending_score": 10.4312,
+    "created_at": "2026-03-20 23:15:47",
+    "updated_at": "2026-03-21 01:15:47",
+    "author_name": "Aarav Patel",
+    "author_avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Aarav"
+  },
+  {
+    "id": 6,
+    "user_id": 8,
+    "content": "Just joined the hub! Hello world.",
+    "post_type": "general",
+    "image_url": null,
+    "trending_score": 6.6489,
+    "created_at": "2026-03-21 01:20:59",
+    "updated_at": "2026-03-21 01:20:59",
+    "author_name": "Test User",
+    "author_avatar": null
+  }
+]

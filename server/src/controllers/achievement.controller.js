@@ -17,7 +17,7 @@ exports.create = async (req, res, next) => {
       userId: req.user.id,
       title,
       description,
-      category,
+      category: category || (mlData ? mlData.category : 'other'),
       mlCategory: mlData ? mlData.category : null,
       mlConfidence: mlData ? mlData.confidence : null,
       proofUrl,

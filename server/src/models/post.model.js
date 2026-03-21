@@ -61,7 +61,7 @@ function getFeed(sort = 'trending', page = 1, limit = 10, currentUserId = null) 
   `;
 
   if (currentUserId) {
-    query += `, EXISTS(SELECT 1 FROM likes WHERE post_id = p.id AND user_id = ${Number(currentUserId)}) as is_liked_by_user`;
+    query += `, EXISTS(SELECT 1 FROM likes WHERE post_id = p.id AND user_id = ?) as is_liked_by_user`;
   } else {
     query += `, 0 as is_liked_by_user`;
   }
@@ -84,9 +84,16 @@ function getFeed(sort = 'trending', page = 1, limit = 10, currentUserId = null) 
   
   // Update trending scores globally occasionally 
   // (In a real app, this would be a CRON job, but we'll do an async fire-and-forget here)
-  setTimeout(() => trendingService.updatePostTrendingScores(), 0);
+  setTimeout(() => {
+    try {
+      trendingService.updatePostTrendingScores();
+    } catch (err) {
+      console.error('[Trending] Background update failed:', err.message);
+    }
+  }, 0);
 
-  const posts = db.prepare(query).all(limit, offset);
+  const params = currentUserId ? [currentUserId, limit, offset] : [limit, offset];
+  const posts = db.prepare(query).all(...params);
 
   // Convert boolean
   return { 

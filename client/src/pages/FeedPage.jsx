@@ -90,12 +90,23 @@ function PostCard({ post, currentUserId, onLike, onUnlike, onCommentAdded, onDel
     }
   };
 
-  const authorInitials = post.author_name
-    ? post.author_name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)
-    : '?';
-  const createdAt = post.created_at
-    ? new Date(post.created_at).toLocaleDateString(undefined, { dateStyle: 'short', timeStyle: 'short' })
-    : '';
+  let authorInitials = '?';
+  try {
+    if (post && post.author_name) {
+      authorInitials = post.author_name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2);
+    }
+  } catch (e) {
+    authorInitials = '?';
+  }
+
+  let createdAt = '';
+  try {
+    if (post && post.created_at) {
+      createdAt = new Date(post.created_at).toLocaleDateString(undefined, { dateStyle: 'short', timeStyle: 'short' });
+    }
+  } catch (e) {
+    createdAt = 'Unknown Date';
+  }
 
   return (
     <article className="card feed-post">
@@ -201,6 +212,7 @@ export default function FeedPage() {
   const [error, setError] = useState('');
 
   const fetchFeed = useCallback(async (pageNum = 1, append = false) => {
+    console.log('DEBUG [FeedPage]: fetchFeed started, pageNum:', pageNum);
     if (pageNum === 1) setLoading(true);
     else setLoadingMore(true);
     setError('');
