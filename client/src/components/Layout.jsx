@@ -10,9 +10,11 @@ function Layout() {
     <>
       <Navbar />
       <main className="app-main">
-        <ErrorBoundary>
-          <Outlet />
-        </ErrorBoundary>
+        <div className="container">
+          <ErrorBoundary>
+            <Outlet />
+          </ErrorBoundary>
+        </div>
       </main>
     </>
   );
