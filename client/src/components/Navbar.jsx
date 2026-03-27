@@ -47,7 +47,6 @@ function Navbar() {
       <div className="navbar-inner">
         <div className="flex items-center gap-2 flex-1">
           <Link to="/feed" className="navbar-brand">
-            <span className="navbar-logo">in</span>
             <span className="navbar-title">SKIL Hub</span>
           </Link>
 

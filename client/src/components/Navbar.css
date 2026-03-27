@@ -36,16 +36,10 @@
   line-height: 1;
 }
 .navbar-title {
-  display: none; /* LinkedIn style brands often use just the logo on small/medium */
-}
-
-@media (min-width: 1200px) {
-  .navbar-title {
-    display: block;
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: var(--color-primary);
-  }
+  display: block;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-primary);
 }
 
 /* Search Bar */
