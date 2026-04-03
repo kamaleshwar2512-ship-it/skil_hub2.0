@@ -1,7 +1,7 @@
 'use strict';
 const projectModel = require('../models/project.model');
 const userModel = require('../models/user.model');
-const { recommendCollaborators } = require('../services/ml.service');
+const { recommendCollaborators, recommendProjects } = require('../services/ml.service');
 const { successResponse, errorResponse } = require('../utils/response');
 
 /**
@@ -121,11 +121,12 @@ exports.delete = (req, res, next) => {
 
 /**
  * Recommends collaborators for a specific project via ML.
+ * Direction: Project → Students
  */
 exports.getRecommendations = async (req, res, next) => {
   try {
     const { id } = req.params;
-    
+
     if (!projectModel.isProjectOwner(id, req.user.id)) {
       return errorResponse(res, 403, 'FORBIDDEN', 'Only project owners can get recommendations');
     }
@@ -135,32 +136,118 @@ exports.getRecommendations = async (req, res, next) => {
       return errorResponse(res, 404, 'NOT_FOUND', 'Project not found');
     }
 
-    // Prepare inputs
-    const requiredSkills = project.required_skills || [];
-    
-    // Get all users in the system (mocking a global search or batch for demo, 
-    // in real life we'd limit this to open-to-work active users)
+    const requiredSkills = Array.isArray(project.required_skills) ? project.required_skills : [];
+
+    // Guard: no required skills defined on the project
+    if (requiredSkills.length === 0) {
+      return successResponse(res, [], 200, {
+        message: 'Project has no required skills defined. Add skills to get recommendations.',
+      });
+    }
+
+    // Fetch all users (limit 1000 for demo; production would page or pre-filter)
     const { users } = userModel.searchUsers({}, 1, 1000);
-    
+
+    // Format user skills — accept both list and plain string
     const formattedUserSkills = users.map(u => ({
       user_id: u.id,
-      skills: Array.isArray(u.skills) ? u.skills.join(', ') : ''
+      skills: Array.isArray(u.skills) ? u.skills : [],
     }));
 
-    // Exclude current pending/approved members
+    // Exclude every current member (any status) so they are not re-recommended
     const members = projectModel.getMembers(id);
-    const excludeIds = members.map(m => m.user_id);
+    const excludeIds = new Set(members.map(m => m.user_id));
 
-    const mlRecommendations = await recommendCollaborators(requiredSkills, formattedUserSkills, excludeIds, 10);
+    const mlRecommendations = await recommendCollaborators(
+      requiredSkills,
+      formattedUserSkills,
+      excludeIds,
+      10,
+    );
 
-    // Re-attach user profiles
-    const populatedRecommendations = mlRecommendations.map(rec => {
-      const userDoc = users.find(u => u.id === rec.user_id);
-      return {
+    // Re-hydrate ML results with full user profiles
+    const userMap = new Map(users.map(u => [u.id, u]));
+    const populatedRecommendations = mlRecommendations
+      .map(rec => ({
         score: rec.score,
-        user: userDoc
-      };
-    }).filter(r => r.user);
+        user: userMap.get(rec.user_id) || null,
+      }))
+      .filter(r => r.user !== null);
+
+    return successResponse(res, populatedRecommendations);
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Recommends open projects for the authenticated student via ML.
+ * Direction: Student → Projects
+ */
+exports.getRecommendedProjects = async (req, res, next) => {
+  try {
+    // Allow fetching recommendations for any user, but only the user themselves
+    // or an admin should normally hit this. For now, anyone authenticated can query.
+    const targetUserId = parseInt(req.params.id, 10);
+
+    const user = userModel.findById(targetUserId);
+    if (!user) {
+      return errorResponse(res, 404, 'NOT_FOUND', 'User not found');
+    }
+
+    const studentSkills = Array.isArray(user.skills) ? user.skills : [];
+
+    // Guard: student has no skills on their profile
+    if (studentSkills.length === 0) {
+      return successResponse(res, [], 200, {
+        message: 'No skills found on your profile. Add skills to get project recommendations.',
+      });
+    }
+
+    // Fetch open projects (up to 500 for matching)
+    const { projects } = projectModel.listProjects({ status: 'open' }, 1, 500);
+
+    if (!projects || projects.length === 0) {
+      return successResponse(res, [], 200, { message: 'No open projects available.' });
+    }
+
+    // Build exclude list: projects the user owns or is already a member of
+    const excludeProjectIds = new Set(
+      projects
+        .filter(p => {
+          const members = projectModel.getMembers(p.id);
+          return members.some(m => m.user_id === targetUserId);
+        })
+        .map(p => p.id)
+    );
+
+    // Format projects for ML payload
+    const projectPayload = projects
+      .filter(p => !excludeProjectIds.has(p.id))
+      .map(p => ({
+        project_id: p.id,
+        required_skills: Array.isArray(p.required_skills) ? p.required_skills : [],
+      }));
+
+    if (projectPayload.length === 0) {
+      return successResponse(res, [], 200, { message: 'No eligible projects to match.' });
+    }
+
+    const mlRecommendations = await recommendProjects(
+      studentSkills,
+      projectPayload,
+      [],   // already filtered above
+      10,
+    );
+
+    // Re-hydrate ML results with full project objects
+    const projectMap = new Map(projects.map(p => [p.id, p]));
+    const populatedRecommendations = mlRecommendations
+      .map(rec => ({
+        score: rec.score,
+        project: projectMap.get(rec.project_id) || null,
+      }))
+      .filter(r => r.project !== null);
 
     return successResponse(res, populatedRecommendations);
   } catch (error) {

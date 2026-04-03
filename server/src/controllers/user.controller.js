@@ -91,3 +91,32 @@ exports.searchUsers = (req, res, next) => {
     next(error);
   }
 };
+
+/**
+ * Minimal function to trigger connection request notification
+ */
+exports.sendConnectionRequest = (req, res, next) => {
+  try {
+    const { receiverId } = req.body;
+    const senderId = req.user.id;
+    
+    if (!receiverId) {
+      return errorResponse(res, 400, 'BAD_REQUEST', 'receiverId is required');
+    }
+
+    // Call existing notification creation from notification controller
+    const notificationController = require('./notification.controller');
+    notificationController.createNotification({
+      userId: receiverId, // Receiver of the notification
+      type: 'collab_request',
+      message: `User ${senderId} sent you a connection request.`,
+      referenceId: senderId,
+      referenceType: 'user'
+    });
+
+    return successResponse(res, { message: 'Connection request sent' }, 201);
+  } catch (error) {
+    next(error);
+  }
+};
+

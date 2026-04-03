@@ -1,6 +1,41 @@
-user_id,skills
-1,Python Machine Learning Data Science
-2,React JavaScript HTML CSS Frontend
-3,Node.js Express SQL Backend
-4,Python Deep Learning Computer Vision
-5,UI UX Figma Product Design
+type,text
+student,python machine learning data science numpy pandas scikit-learn
+student,react javascript html css frontend ui ux
+student,node.js express sql backend rest api
+student,python deep learning computer vision tensorflow keras
+student,ui ux figma product design adobe xd wireframing
+student,java spring boot microservices docker kubernetes
+student,data analysis visualization tableau power bi sql
+student,android kotlin mobile development firebase
+student,ios swift mobile development xcode
+student,cybersecurity network security linux penetration testing
+student,cloud computing aws azure gcp devops terraform
+student,natural language processing nlp transformers huggingface bert
+student,embedded systems arduino c c++ firmware iot
+student,blockchain solidity ethereum smart contracts web3
+student,game development unity c# 3d animation
+student,python flask django rest api backend web
+student,research paper writing latex academic machine learning
+student,sql database design postgresql mongodb data engineering
+student,react native cross platform mobile javascript
+student,data scraping selenium beautifulsoup python automation
+project,python machine learning scikit-learn data analysis
+project,react javascript frontend css html web development
+project,node.js express backend api sql database
+project,python deep learning tensorflow computer vision
+project,ui ux design figma prototyping wireframing
+project,java spring boot rest api microservices
+project,data visualization tableau dashboard sql analytics
+project,android kotlin firebase mobile app
+project,ios swift xcode mobile development
+project,cloud aws devops docker terraform kubernetes
+project,nlp python transformers text classification bert
+project,embedded c c++ iot sensors arduino
+project,blockchain solidity web3 ethereum
+project,unity c# game development 3d modeling
+project,flask django python web api backend
+project,postgresql mongodb database design data engineering
+project,react native javascript mobile cross platform
+project,python selenium automation web scraping
+project,cybersecurity linux network penetration testing
+project,machine learning python recommendation system

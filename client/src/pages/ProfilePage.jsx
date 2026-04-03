@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axiosInstance from '../api/axiosInstance';
 import { useAuth } from '../context/AuthContext';
+import UserActions from '../components/UserActions';
 
 export default function ProfilePage() {
   const { id } = useParams();
@@ -91,11 +92,15 @@ export default function ProfilePage() {
             {profile.email && <p className="text-sm text-secondary">{profile.email}</p>}
           </div>
         </div>
-        {isOwnProfile && (
+        {isOwnProfile ? (
           <div className="profile-actions">
             <Link to="/profile/edit" className="btn btn-secondary btn-sm">
               Edit Profile
             </Link>
+          </div>
+        ) : (
+          <div className="profile-actions">
+            <UserActions userId={profile.id} />
           </div>
         )}
       </div>

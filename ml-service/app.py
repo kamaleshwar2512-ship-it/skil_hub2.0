@@ -130,6 +130,62 @@ def recommend_collaborators():
         return jsonify({"error": "Recommendation failed", "detail": str(e)}), 500
 
 
+# ─── Project Recommendation (Student → Projects) ─────────────
+@app.route("/recommend-projects", methods=["POST"])
+def recommend_projects():
+    """
+    Request body:
+    {
+      "student_skills": ["Python", "ML"] | "Python ML",
+      "projects": [
+        { "project_id": 1, "required_skills": ["Python", "ML"] },
+        { "project_id": 2, "required_skills": "React JavaScript" }
+      ],
+      "exclude_project_ids": [5],
+      "top_n": 10
+    }
+    Response: { "recommendations": [{ "project_id": 1, "score": 0.91 }, ...] }
+    """
+    data = request.get_json(silent=True)
+    if not data:
+        return jsonify({"error": "Invalid JSON body"}), 400
+
+    student_skills = data.get("student_skills", [])
+    projects = data.get("projects", [])
+    exclude_project_ids = set(data.get("exclude_project_ids", []))
+    top_n = int(data.get("top_n", 10))
+
+    # Guard: no skills provided
+    if not student_skills:
+        return jsonify({"recommendations": [], "message": "No student skills provided"})
+
+    # Guard: no candidate projects
+    if not projects:
+        return jsonify({"recommendations": [], "message": "No projects provided"})
+
+    # Validate project list entries
+    if not isinstance(projects, list):
+        return jsonify({"error": "projects must be a list"}), 400
+
+    try:
+        recommender = get_recommender()
+        recommendations = recommender.recommend_projects(
+            student_skills=student_skills,
+            projects=projects,
+            exclude_project_ids=exclude_project_ids,
+            top_n=top_n,
+        )
+        return jsonify({"recommendations": recommendations})
+    except FileNotFoundError:
+        return jsonify({
+            "recommendations": [],
+            "warning": "Recommender model not trained yet. Run training scripts first.",
+        })
+    except Exception as e:
+        app.logger.error(f"Project recommendation error: {e}")
+        return jsonify({"error": "Project recommendation failed", "detail": str(e)}), 500
+
+
 # ─── Entry Point ─────────────────────────────────────────────
 if __name__ == "__main__":
     print(f"\n🤖 SKIL Hub ML Service")

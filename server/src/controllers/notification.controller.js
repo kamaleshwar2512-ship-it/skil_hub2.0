@@ -69,3 +69,27 @@ exports.markAllRead = (req, res, next) => {
     next(error);
   }
 };
+
+/**
+ * Creates a notification and emits a real-time event.
+ */
+exports.createNotification = (data) => {
+  // Call existing DB logic
+  const notification = notificationModel.createNotification(data);
+
+  // Emit real-time notification
+  try {
+    const { getIO, getUserSocket } = require('../socket');
+    const receiverId = data.userId; // user_id in DB is the receiver
+    const socketId = getUserSocket(receiverId);
+    
+    if (socketId) {
+      const io = getIO();
+      io.to(socketId).emit("new_notification", notification);
+    }
+  } catch (err) {
+    console.error('[Notification Emit Error]', err.message);
+  }
+
+  return notification;
+};

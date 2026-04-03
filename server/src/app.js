@@ -20,6 +20,9 @@ const achievementRoutes = require('./routes/achievement.routes');
 const postRoutes = require('./routes/post.routes');
 const projectRoutes = require('./routes/project.routes');
 const notificationRoutes = require('./routes/notification.routes');
+const connectionRoutes = require('./routes/connection.routes');
+const messageRoutes = require('./routes/message.routes');
+const socketSetup = require('./socket');
 
 const app = express();
 
@@ -42,6 +45,8 @@ app.use('/api/achievements', achievementRoutes);
 app.use('/api/posts', postRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/connections', connectionRoutes);
+app.use('/api/messages', messageRoutes);
 
 // ─── Health Check ─────────────────────────────────────────────
 app.get('/health', (req, res) => {
@@ -134,12 +139,14 @@ app.use(errorHandler);
 
 // ─── Start Server ─────────────────────────────────────────────
 if (require.main === module) {
-  app.listen(PORT, () => {
+  const server = app.listen(PORT, () => {
     console.log(`\n🎓 SKIL Hub API Server`);
     console.log(`   Listening on  : http://localhost:${PORT}`);
     console.log(`   Environment   : ${NODE_ENV}`);
     console.log(`   Health check  : http://localhost:${PORT}/health\n`);
   });
+  
+  socketSetup.initSocket(server);
 }
 
 module.exports = app;

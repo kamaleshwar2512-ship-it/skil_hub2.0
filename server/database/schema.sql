@@ -123,3 +123,23 @@ CREATE INDEX IF NOT EXISTS idx_project_members_project ON project_members(projec
 CREATE INDEX IF NOT EXISTS idx_project_members_user   ON project_members(user_id);
 CREATE INDEX IF NOT EXISTS idx_notifications_user_read ON notifications(user_id, is_read);
 CREATE INDEX IF NOT EXISTS idx_endorsements_achievement ON endorsements(achievement_id);
+
+-- ─── Connections ────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS connections (
+  id            INTEGER PRIMARY KEY AUTOINCREMENT,
+  requester_id  INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  receiver_id   INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  status        TEXT    NOT NULL CHECK(status IN ('pending','accepted')) DEFAULT 'pending',
+  created_at    TEXT    NOT NULL DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_connections_users ON connections(requester_id, receiver_id);
+
+-- ─── Messages ───────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS messages (
+  id            INTEGER PRIMARY KEY AUTOINCREMENT,
+  sender_id     INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  receiver_id   INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  content       TEXT    NOT NULL,
+  created_at    TEXT    NOT NULL DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_messages_users ON messages(sender_id, receiver_id);

@@ -14,6 +14,7 @@ import ProjectDetailPage from './pages/ProjectDetailPage';
 import CreateProjectPage from './pages/CreateProjectPage';
 import SearchPage from './pages/SearchPage';
 import NotificationsPage from './pages/NotificationsPage';
+import MessagesPage from './pages/MessagesPage';
 
 function App() {
   return (
@@ -40,6 +41,7 @@ function App() {
             <Route path="projects/:id" element={<ProjectDetailPage />} />
             <Route path="search" element={<SearchPage />} />
             <Route path="notifications" element={<NotificationsPage />} />
+            <Route path="messages/:userId" element={<MessagesPage />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/feed" replace />} />
