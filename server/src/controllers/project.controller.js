@@ -170,6 +170,8 @@ exports.getRecommendations = async (req, res, next) => {
     const populatedRecommendations = mlRecommendations
       .map(rec => ({
         score: rec.score,
+        matchedSkills: rec.matched_skills || [],
+        missingSkills: rec.missing_skills || [],
         user: userMap.get(rec.user_id) || null,
       }))
       .filter(r => r.user !== null);
@@ -245,6 +247,8 @@ exports.getRecommendedProjects = async (req, res, next) => {
     const populatedRecommendations = mlRecommendations
       .map(rec => ({
         score: rec.score,
+        matchedSkills: rec.matched_skills || [],
+        missingSkills: rec.missing_skills || [],
         project: projectMap.get(rec.project_id) || null,
       }))
       .filter(r => r.project !== null);

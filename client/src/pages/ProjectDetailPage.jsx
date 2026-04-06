@@ -284,12 +284,48 @@ export default function ProjectDetailPage() {
           <h2 className="profile-section-title">Recommended Collaborators</h2>
           <ul className="project-members-list">
             {recommendations.map((rec) => (
-              <li key={rec.user.id} className="project-member-row">
-                <div>
+              <li key={rec.user.id} className="project-member-row" style={{ alignItems: 'flex-start' }}>
+                <div style={{ flex: 1 }}>
                   <div className="font-medium">{rec.user.name}</div>
-                  <div className="text-xs text-secondary">
+                  <div className="text-xs text-secondary mb-1">
                     {rec.user.department} · Score {(rec.score * 100).toFixed(0)}%
                   </div>
+                  {(rec.matchedSkills?.length > 0 || rec.missingSkills?.length > 0) && (
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '4px' }}>
+                      {rec.matchedSkills?.map((s) => (
+                        <span
+                          key={`matched-${s}`}
+                          style={{
+                            background: '#dcfce7',
+                            color: '#166534',
+                            border: '1px solid #bbf7d0',
+                            borderRadius: '9999px',
+                            padding: '2px 6px',
+                            fontSize: '0.7rem',
+                            fontWeight: 600
+                          }}
+                        >
+                          ✓ {s}
+                        </span>
+                      ))}
+                      {rec.missingSkills?.map((s) => (
+                        <span
+                          key={`missing-${s}`}
+                          style={{
+                            background: '#f3f4f6',
+                            color: '#6b7280',
+                            border: '1px solid #e5e7eb',
+                            borderRadius: '9999px',
+                            padding: '2px 6px',
+                            fontSize: '0.7rem',
+                            fontWeight: 500
+                          }}
+                        >
+                          + {s}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </li>
             ))}

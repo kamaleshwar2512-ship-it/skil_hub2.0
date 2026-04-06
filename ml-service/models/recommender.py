@@ -20,6 +20,19 @@ class SkillRecommender:
     def __init__(self):
         self.vectorizer = None
         self.is_loaded = False
+        self.synonyms = {
+            "ml": "machine learning",
+            "ai": "artificial intelligence",
+            "js": "javascript",
+            "py": "python",
+            "aws": "amazon web services",
+            "gcp": "google cloud platform",
+            "azure": "microsoft azure",
+            "reactjs": "react",
+            "nodejs": "node",
+            "backend": "back-end",
+            "frontend": "front-end",
+        }
 
     # ─── Loading ──────────────────────────────────────────────────────────────
 
@@ -35,32 +48,73 @@ class SkillRecommender:
 
     # ─── Helpers ──────────────────────────────────────────────────────────────
 
+    def _normalize_tokens(self, tokens):
+        """Normalize tokens: lowercase, trim, and expand synonyms."""
+        normalized = []
+        for t in tokens:
+            t = str(t).lower().strip()
+            if not t:
+                continue
+            # Expand synonym if found
+            if t in self.synonyms:
+                normalized.append(self.synonyms[t])
+            else:
+                normalized.append(t)
+        return sorted(set(normalized))
+
     def _to_text(self, skills):
         """
-        Convert a skill value to a normalized lowercase text string.
-        Accepts:
-          - list  : ["Python", "ML"]  → "ml python"
-          - str   : "Python ML"       → "ml python"
-          - other : anything else     → ""
+        Convert a skill value to a normalized lowercase text string with synonym expansion.
         """
         if isinstance(skills, list):
-            tokens = [str(s).lower().strip() for s in skills if str(s).strip()]
-            return " ".join(sorted(set(tokens)))
+            tokens = self._normalize_tokens(skills)
+            return " ".join(tokens)
         if isinstance(skills, str):
-            tokens = [t.lower().strip() for t in skills.split() if t.strip()]
-            return " ".join(sorted(set(tokens)))
+            # Try splitting by comma first, then whitespace
+            raw_tokens = skills.replace(",", " ").split()
+            tokens = self._normalize_tokens(raw_tokens)
+            return " ".join(tokens)
         return ""
+
+    def _get_skill_sets(self, skills):
+        """Helper to get a clean set of normalized skills."""
+        if isinstance(skills, list):
+            return set(self._normalize_tokens(skills))
+        if isinstance(skills, str):
+            raw_tokens = skills.replace(",", " ").split()
+            return set(self._normalize_tokens(raw_tokens))
+        return set()
 
     def _safe_transform(self, texts):
         """
         Transform texts with the fitted vectorizer.
-        Falls back to fit_transform if vocabulary mismatch occurs (e.g. new skills
-        not seen during training).
         """
         try:
             return self.vectorizer.transform(texts)
         except Exception:
+            # Fallback for dynamic vocab during inference
             return self.vectorizer.fit_transform(texts)
+
+    def _calculate_hybrid_score(self, query_skills, candidate_skills, sim_score):
+        """
+        Calculate hybrid score: 60% Overlap Ratio + 40% Cosine Similarity.
+        Also provides matched and missing skill lists.
+        """
+        q_set = self._get_skill_sets(query_skills)
+        c_set = self._get_skill_sets(candidate_skills)
+
+        if not q_set:
+            return 0.0, [], list(c_set)
+
+        matched = list(q_set.intersection(c_set))
+        missing = list(q_set - c_set)
+
+        overlap_ratio = len(matched) / len(q_set)
+        
+        # Hybrid Score = 60% Overlap + 40% Similarity
+        final_score = (0.6 * overlap_ratio) + (0.4 * float(sim_score))
+        
+        return round(final_score, 4), sorted(matched), sorted(missing)
 
     # ─── Direction 1: Project → Students ─────────────────────────────────────
 
@@ -73,15 +127,8 @@ class SkillRecommender:
     ):
         """
         Recommend collaborators for a project.
-
-        Args:
-            required_skills : list[str] | str  — project's required skills
-            user_skills     : list[dict]        — [{"user_id": int, "skills": str|list}, ...]
-            exclude_ids     : set[int]          — user IDs already on the team
-            top_n           : int               — max results to return
-
-        Returns:
-            list[dict] sorted by score desc — [{"user_id": int, "score": float}, ...]
+        Returns: list[dict] sorted by score desc — 
+        [{"user_id": int, "score": float, "matched": [], "missing": []}, ...]
         """
         if not self.is_loaded:
             self.load()
@@ -89,7 +136,7 @@ class SkillRecommender:
         if exclude_ids is None:
             exclude_ids = set()
 
-        # Deduplicate input by user_id (last entry wins)
+        # Deduplicate and filter
         seen = {}
         for u in user_skills:
             seen[u["user_id"]] = u
@@ -109,17 +156,22 @@ class SkillRecommender:
         query_vec = tfidf_matrix[0]
         candidate_vecs = tfidf_matrix[1:]
 
-        scores = cosine_similarity(query_vec, candidate_vecs)[0]
+        sim_scores = cosine_similarity(query_vec, candidate_vecs)[0]
 
         results = []
         for idx, candidate in enumerate(candidates):
-            score = float(scores[idx])
+            score, matched, missing = self._calculate_hybrid_score(
+                required_skills, candidate["skills"], sim_scores[idx]
+            )
             if score > 0:
                 results.append({
                     "user_id": candidate["user_id"],
-                    "score": round(score, 4),
+                    "score": score,
+                    "matched_skills": matched,
+                    "missing_skills": missing
                 })
 
+        # Recalculate sort based on hybrid score
         results.sort(key=lambda x: x["score"], reverse=True)
         return results[:top_n]
 
@@ -134,15 +186,8 @@ class SkillRecommender:
     ):
         """
         Recommend open projects for a student.
-
-        Args:
-            student_skills       : list[str] | str — student's skills
-            projects             : list[dict]       — [{"project_id": int, "required_skills": str|list}, ...]
-            exclude_project_ids  : set[int]         — project IDs the student already owns/joined
-            top_n                : int              — max results to return
-
-        Returns:
-            list[dict] sorted by score desc — [{"project_id": int, "score": float}, ...]
+        Returns: list[dict] sorted by score desc — 
+        [{"project_id": int, "score": float, "matched": [], "missing": []}, ...]
         """
         if not self.is_loaded:
             self.load()
@@ -150,12 +195,10 @@ class SkillRecommender:
         if exclude_project_ids is None:
             exclude_project_ids = set()
 
-        # Deduplicate input by project_id (last entry wins)
         seen = {}
         for p in projects:
             seen[p["project_id"]] = p
 
-        # Filter excluded and projects with no required skills
         candidates = [
             p for p in seen.values()
             if p["project_id"] not in exclude_project_ids
@@ -176,15 +219,19 @@ class SkillRecommender:
         query_vec = tfidf_matrix[0]
         candidate_vecs = tfidf_matrix[1:]
 
-        scores = cosine_similarity(query_vec, candidate_vecs)[0]
+        sim_scores = cosine_similarity(query_vec, candidate_vecs)[0]
 
         results = []
         for idx, candidate in enumerate(candidates):
-            score = float(scores[idx])
+            score, matched, missing = self._calculate_hybrid_score(
+                candidate["required_skills"], student_skills, sim_scores[idx]
+            )
             if score > 0:
                 results.append({
                     "project_id": candidate["project_id"],
-                    "score": round(score, 4),
+                    "score": score,
+                    "matched_skills": matched,
+                    "missing_skills": missing
                 })
 
         results.sort(key=lambda x: x["score"], reverse=True)
