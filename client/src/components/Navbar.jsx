@@ -2,7 +2,6 @@ import { useState, useRef, useEffect } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
-import './Navbar.css';
 
 function Navbar() {
   const { user, logout } = useAuth();
@@ -39,55 +38,45 @@ function Navbar() {
     ? user.name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)
     : '?';
 
-  const navLinkClass = ({ isActive }) =>
-    `navbar-link${isActive ? ' active' : ''}`;
-
   return (
     <nav className="navbar">
       <div className="navbar-inner">
-        <div className="flex items-center gap-2 flex-1">
-          <Link to="/feed" className="navbar-brand">
-            <span className="navbar-title">SKIL Hub</span>
-          </Link>
 
-          <form onSubmit={handleSearch} className="navbar-search">
-            <span className="search-icon">🔍</span>
-            <input
-              type="text"
-              placeholder="Search researchers, projects, or achievements"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </form>
-        </div>
+        {/* ── Brand ── */}
+        <Link to="/feed" className="navbar-brand">
+          <div className="navbar-logo-icon">S</div>
+          <span className="navbar-title">SKIL Hub</span>
+        </Link>
 
-        <div className="navbar-links">
-          <NavLink to="/feed" className={navLinkClass}>
-            <span className="nav-icon">🏠</span>
-            <span>Home</span>
-          </NavLink>
-          <NavLink to="/network" className={navLinkClass}>
-            <span className="nav-icon">👥</span>
-            <span>My Network</span>
-          </NavLink>
-          <NavLink to="/projects" className={navLinkClass}>
-            <span className="nav-icon">📁</span>
-            <span>Projects</span>
-          </NavLink>
-          <NavLink to="/notifications" className={navLinkClass}>
-            <div className="relative">
-              <span className="nav-icon">🔔</span>
-              {unreadCount > 0 && (
-                <span className="notification-badge" style={{ top: -2, right: -2 }}>
-                  {unreadCount > 9 ? '9+' : unreadCount}
-                </span>
-              )}
-            </div>
-            <span>Notifications</span>
-          </NavLink>
-        </div>
+        {/* ── Centered Search ── */}
+        <form onSubmit={handleSearch} className="navbar-search">
+          <span className="search-icon">🔍</span>
+          <input
+            type="text"
+            placeholder="Search projects, students, achievements…"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </form>
 
+        {/* ── Right Actions ── */}
         <div className="navbar-right">
+
+          {/* Notifications Icon Button */}
+          <NavLink
+            to="/notifications"
+            className={({ isActive }) => `navbar-icon-btn${isActive ? ' active' : ''}`}
+            title="Notifications"
+          >
+            🔔
+            {unreadCount > 0 && (
+              <span className="notification-badge">
+                {unreadCount > 9 ? '9+' : unreadCount}
+              </span>
+            )}
+          </NavLink>
+
+          {/* Profile Dropdown */}
           <div className="navbar-profile-menu" ref={dropdownRef}>
             <button
               type="button"
@@ -97,45 +86,51 @@ function Navbar() {
               <span className="avatar avatar-sm">
                 {user?.avatar_url ? <img src={user.avatar_url} alt="" /> : initials}
               </span>
-              <span>Me ⌄</span>
+              <span>{user?.name?.split(' ')[0] || 'Me'} ⌄</span>
             </button>
+
             <div className={`profile-dropdown ${dropdownOpen ? 'profile-dropdown-open' : ''}`}>
               <div className="dropdown-header">
                 <span className="avatar avatar-lg">
                   {user?.avatar_url ? <img src={user.avatar_url} alt="" /> : initials}
                 </span>
                 <div className="dropdown-user-info">
-                  <p className="name">{user?.name}</p>
-                  <p className="headline">{user?.role === 'faculty' ? 'Faculty' : 'Student'} @ {user?.department}</p>
+                  <p className="name">{user?.name ?? 'Unknown User'}</p>
+                  <p className="headline">
+                    {user?.role === 'faculty' ? 'Faculty' : 'Student'}
+                    {user?.department ? ` @ ${user.department}` : ''}
+                  </p>
                 </div>
               </div>
-              <Link to={`/profile/${user?.id}`} className="view-profile-btn" onClick={() => setDropdownOpen(false)}>
+
+              <Link
+                to={`/profile/${user?.id}`}
+                className="view-profile-btn"
+                onClick={() => setDropdownOpen(false)}
+              >
                 View Profile
               </Link>
-              
+
               <div className="dropdown-section">
                 <p className="dropdown-section-title">Account</p>
                 <Link to="/profile/edit" className="dropdown-item" onClick={() => setDropdownOpen(false)}>
-                  Settings & Privacy
-                </Link>
-                <Link to="/help" className="dropdown-item" onClick={() => setDropdownOpen(false)}>
-                  Help
+                  ⚙️ Settings & Privacy
                 </Link>
               </div>
 
               <div className="dropdown-section">
                 <p className="dropdown-section-title">Manage</p>
-                <Link to="/projects/my" className="dropdown-item" onClick={() => setDropdownOpen(false)}>
-                  Posts & Activity
+                <Link to="/projects" className="dropdown-item" onClick={() => setDropdownOpen(false)}>
+                  📁 My Projects
                 </Link>
-                <Link to="/projects/job-postings" className="dropdown-item" onClick={() => setDropdownOpen(false)}>
-                  Project Invitations
+                <Link to="/messages/0" className="dropdown-item" onClick={() => setDropdownOpen(false)}>
+                  💬 Messages
                 </Link>
               </div>
 
               <div className="dropdown-item-signout">
-                <button onClick={handleLogout} className="dropdown-item">
-                  Sign Out
+                <button onClick={handleLogout} className="dropdown-item" style={{ color: 'var(--color-danger)' }}>
+                  🚪 Sign Out
                 </button>
               </div>
             </div>
